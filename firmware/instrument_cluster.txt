@@ -1,0 +1,182 @@
+Firmware Structure (Arduino IDE)
+
+This document describes the final firmware architecture used for the ESP32 Automotive Instrument Cluster project.
+
+The goal of this structure is:
+
+readability
+
+modularity
+
+easy expansion
+
+professional embedded-systems style
+
+1. Folder Structure
+
+Inside the GitHub repository:
+
+firmware/
+└── instrument_cluster/
+    ├── instrument_cluster.ino
+    ├── config.h
+    ├── inputs.h
+    ├── inputs.cpp
+    ├── display.h
+    ├── display.cpp
+
+Arduino IDE requires the main .ino file to have the same name as the folder.
+
+2. File Responsibilities
+2.1 instrument_cluster.ino (Main Entry Point)
+
+Purpose:
+
+System initialization
+
+High-level logic
+
+Main loop execution
+
+Responsibilities:
+
+Initialize serial (debug)
+
+Initialize GPIO pins
+
+Initialize I2C and displays
+
+Periodically read inputs
+
+Update displays
+
+This file remains short and readable.
+
+2.2 config.h (System Configuration)
+
+Purpose: Centralized configuration for the entire system.
+
+Contains:
+
+GPIO pin definitions
+
+I2C addresses
+
+Display layout mapping
+
+Feature enable/disable flags
+
+Example responsibilities:
+
+Which GPIO controls oil pressure
+
+Which display shows which indicator
+
+2.3 inputs.h / inputs.cpp (Input Handling)
+
+Purpose: All vehicle signal processing logic.
+
+Responsibilities:
+
+Read optocoupler-isolated GPIO inputs
+
+Convert raw signals to logical states
+
+Provide clean API to the main loop
+
+Example functions:
+
+bool isOilPressureActive()
+
+bool isNeutralActive()
+
+bool isTurnSignalActive()
+
+This separation allows easy future addition of:
+
+RPM input
+
+analog sensors
+
+filtering / debouncing
+
+2.4 display.h / display.cpp (Display Management)
+
+Purpose: All OLED and graphics handling.
+
+Responsibilities:
+
+Initialize OLED displays
+
+Select TCA9548A channels
+
+Draw bitmaps in correct screen regions
+
+Refresh displays synchronously
+
+The main loop never directly draws pixels — it only calls high-level functions.
+
+3. Data Flow
+Vehicle Signal
+   ↓
+Optocoupler
+   ↓
+ESP32 GPIO
+   ↓
+inputs.cpp
+   ↓
+Logical State
+   ↓
+display.cpp
+   ↓
+OLED Bitmap
+
+This unidirectional flow ensures:
+
+clean separation of concerns
+
+easy debugging
+
+deterministic behavior
+
+4. Why This Structure Is Professional
+
+This architecture mirrors real embedded systems projects:
+
+HAL-like separation (inputs / display)
+
+Config-driven behavior
+
+Minimal coupling between modules
+
+A recruiter or engineer can immediately understand:
+
+where to add features
+
+where to debug problems
+
+how the system scales
+
+5. Future Expansion Examples
+
+With this structure, adding new features is straightforward:
+
+RPM measurement → new module rpm.cpp
+
+Temperature sensor → extend inputs.cpp
+
+CAN bus (future bike) → new communication module
+
+No existing code needs to be rewritten.
+
+6. Portfolio Value
+
+This firmware structure demonstrates:
+
+Embedded software architecture
+
+Maintainability awareness
+
+System-level thinking
+
+It elevates the project from a hobby prototype to a professional engineering demonstration.
